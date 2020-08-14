@@ -39,8 +39,8 @@ const getDetailsfromHereAndGoogle = async(location, index) => {
             sourceName: location.sourceName,
             destinationName: location.destinationName,
             route: 'Route' + (index+1),
-            date: moment().format('YYYY-MM-DD'),
-            time: moment().format('hh:mm a')
+            date: moment().tz('Europe/Sarajevo').format('YYYY-MM-DD'),
+            time: moment().tz('Europe/Sarajevo').format('hh:mm a')
 
         };
 
