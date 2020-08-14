@@ -166,8 +166,8 @@ const getAndSaveDetails = async () => {
     }
 };
 
-cron.schedule('*/30 * * * *', () => {
-    console.log(new Date(), 'running a task every 30 minute');
+cron.schedule('*/15 * * * *', () => {
+    console.log(new Date(), 'running a task every 15 minute');
     getAndSaveDetails();
 });
 
