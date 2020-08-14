@@ -1,4 +1,5 @@
 const cron = require('node-cron');
+const moment = require('moment-timezone');
 const moduleConfig = require('./config/module');
 
 const imports = moduleConfig.getImports();
@@ -36,7 +37,11 @@ const getDetailsfromHereAndGoogle = async(location, index) => {
             durationHereMaps: hereMapsDistanceDuration.duration,
             durationGoogleMaps: googleMapsDistanceDuration.duration,
             sourceName: location.sourceName,
-            destinationName: location.destinationName
+            destinationName: location.destinationName,
+            route: 'Route' + (index+1),
+            date: moment().format('YYYY-MM-DD'),
+            time: moment().format('hh:mm a')
+
         };
 
     await imports.models.maps_eta_details.create(details);
@@ -170,6 +175,7 @@ cron.schedule('*/15 * * * *', () => {
     console.log(new Date(), 'running a task every 15 minute');
     getAndSaveDetails();
 });
+
 
 
 module.exports = {};

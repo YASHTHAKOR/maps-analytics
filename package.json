@@ -21,6 +21,7 @@
     "architect": "^0.1.13",
     "axios": "^0.19.2",
     "dotenv": "^8.2.0",
+    "moment-timezone": "^0.5.31",
     "mysql2": "^2.1.0",
     "node-cron": "^2.0.3",
     "sequelize": "^6.3.4"

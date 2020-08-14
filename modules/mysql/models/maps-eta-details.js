@@ -36,6 +36,15 @@ module.exports = (sequelize, DataTypes) => {
         },
         durationGoogleMaps: {
             type:  DataTypes.BIGINT
+        },
+        time: {
+            type: DataTypes.TEXT
+        },
+        date: {
+            type: DataTypes.DATEONLY
+        },
+        route: {
+            type: DataTypes.TEXT
         }
     }, {
         createdAt: 'created_at',
