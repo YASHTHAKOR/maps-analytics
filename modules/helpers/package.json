@@ -1,0 +1,13 @@
+{
+    "name": "helpers",
+    "version": "1.0.0",
+    "main": "index.js",
+    "private": true,
+
+    "plugin": {
+        "consumes": [
+            "models"
+        ],
+        "provides": ["hereMap", "googleMap"]
+    }
+}

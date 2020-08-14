@@ -6,6 +6,10 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+.idea/
+
+.env
+
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
@@ -52,6 +56,8 @@ typings/
 
 # Optional eslint cache
 .eslintcache
+
+modules/mysql/config/database.json
 
 # Microbundle cache
 .rpt2_cache/

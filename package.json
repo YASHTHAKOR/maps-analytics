@@ -1,0 +1,28 @@
+{
+  "name": "maps-analytics",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YASHTHAKOR/maps-analytics.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/YASHTHAKOR/maps-analytics/issues"
+  },
+  "homepage": "https://github.com/YASHTHAKOR/maps-analytics#readme",
+  "dependencies": {
+    "@googlemaps/google-maps-services-js": "^3.1.6",
+    "architect": "^0.1.13",
+    "axios": "^0.19.2",
+    "dotenv": "^8.2.0",
+    "mysql2": "^2.1.0",
+    "node-cron": "^2.0.3",
+    "sequelize": "^6.3.4"
+  }
+}
