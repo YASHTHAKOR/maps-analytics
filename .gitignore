@@ -58,6 +58,8 @@ typings/
 .eslintcache
 
 modules/mysql/config/database.json
+modules/mainDB/config/database.json
+modules/mongo/config/database.json
 
 # Microbundle cache
 .rpt2_cache/

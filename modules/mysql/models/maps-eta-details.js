@@ -43,6 +43,7 @@ module.exports = (sequelize, DataTypes) => {
         date: {
             type: DataTypes.DATEONLY
         },
+        zoneId: DataTypes.INTEGER,
         route: {
             type: DataTypes.TEXT
         }

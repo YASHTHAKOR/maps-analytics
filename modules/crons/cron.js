@@ -1,6 +1,8 @@
+const { Op, fn, literal } = require('sequelize');
 const cron = require('node-cron');
 const moment = require('moment-timezone');
 const moduleConfig = require('./config/module');
+const { groupBy } = require('lodash');
 
 const imports = moduleConfig.getImports();
 const options = moduleConfig.getOptions();
@@ -40,7 +42,8 @@ const getDetailsfromHereAndGoogle = async(location, index) => {
             destinationName: location.destinationName,
             route: 'Route' + (index+1),
             date: moment().tz('Europe/Sarajevo').format('YYYY-MM-DD'),
-            time: moment().tz('Europe/Sarajevo').format('hh:mm a')
+            time: moment().tz('Europe/Sarajevo').format('hh:mm a'),
+            zoneId: location.zoneId
 
         };
 
@@ -52,122 +55,37 @@ const getDetailsfromHereAndGoogle = async(location, index) => {
 
 const getAndSaveDetails = async () => {
 
-    const locations = [{
+    const zones = await imports.mainModels.zones.findAll({
+        where: {
+            calibrationStatus: 1
+        },
+        raw: true,
+        attributes: ['id']
+    });
+    const routes = await imports.mainModels.zone_calibration_config.findAll({
+        where: {
+            zoneId: { [Op.in]: zones.map(zone => zone.id) }
+        },
+        raw: true
+    });
+
+    const locations = routes.map(route => ({
         source: [{
-            latitude:  46.203964,
-            longitude: 6.142820
+            latitude: route.sourceLatitude,
+            longitude: route.sourceLongitude
         }],
         destination: [{
-            latitude: 46.191864,
-            longitude: 6.152905
+            latitude: route.destinationLatitude,
+            longitude: route.destinationLongitude
         }],
-        sourceName: 'Rue François-Diday 3',
-        destinationName: 'Avenue de champel 53'
-    },{
-        source: [{
-            latitude:  46.208640,
-            longitude: 6.146054
-        }],
-        destination: [{
-            latitude: 46.187741,
-            longitude: 6.157964
-        }],
-        sourceName: 'Rue Pécolat 8',
-        destinationName: 'Chemin des Clochettes 8'
-    },{
-        source: [{
-            latitude:  46.193965,
-            longitude: 6.139899
-        }],
-        destination: [{
-            latitude: 46.203124,
-            longitude: 6.158163
-        }],
-        sourceName: 'Boulevard du Pont dArve 48',
-        destinationName: 'Rue de la Mairie 13'
-    },{
-        source: [{
-            latitude:  46.192127,
-            longitude: 6.129181
-        }],
-        destination: [{
-            latitude: 46.210316,
-            longitude: 6.144047
-        }],
-        sourceName: 'Rue Boissonnas 20',
-        destinationName: 'Place de Cornavin 20'
-    },{
-        source: [{
-            latitude:  46.202710,
-            longitude: 6.159131
-        }],
-        destination: [{
-            latitude: 46.196430,
-            longitude: 6.148226
-        }],
-        sourceName: 'Rue de Montchoisy 4',
-        destinationName: 'Boulevard de la Tour 14'
-    },{
-        source: [{
-            latitude:  46.191892,
-            longitude: 6.152817
-        }],
-        destination: [{
-            latitude: 46.204915,
-            longitude: 6.144662
-        }],
-        sourceName: 'Avenue de champel 53',
-        destinationName: 'Rue du Rhône 11'
-    },{
-        source: [{
-            latitude:  46.194160,
-            longitude: 6.155990
-        }],
-        destination: [{
-            latitude: 46.237255,
-            longitude: 6.109210
-        }],
-        sourceName: 'Avenue Alfred-Bertrand',
-        destinationName: 'Aiport'
-    },{
-        source: [{
-            latitude:  46.237255,
-            longitude: 6.109210
-        }],
-        destination: [{
-            latitude: 46.204839,
-            longitude: 6.157726
-        }],
-        sourceName: 'Aiport',
-        destinationName: 'Rue du simplon 7'
-    },{
-        source: [{
-            latitude:  46.203388,
-            longitude: 6.149850
-        }],
-        destination: [{
-            latitude: 46.250802,
-            longitude: 6.149509
-        }],
-        sourceName: 'Place longemalle 4',
-        destinationName: 'La Réserve Bellevue'
-    },{
-        source: [{
-            latitude:  46.203388,
-            longitude: 6.149850
-        }],
-        destination: [{
-            latitude: 46.202170,
-            longitude: 6.138210
-        }],
-        sourceName: 'Place longemalle 4',
-        destinationName: 'Rue des Rois 15'
-    }];
+        sourceName: route.sourceName,
+        destinationName: route.destinationName,
+        zoneId: route.zoneId
+    }));
 
 
     for(let i=0 ; i< locations.length; i++) {
         await getDetailsfromHereAndGoogle(locations[i], i);
-
     }
 };
 
@@ -176,6 +94,73 @@ cron.schedule('*/15 * * * *', () => {
     getAndSaveDetails();
 });
 
+/** calibration for all route by time
+* SELECT time,avg((durationHereMaps/60)/(durationGoogleMaps/60))as duration_index
+* FROM maps_eta_details
+* group by time
+* */
+
+const updateCalibrationValues = async () => {
+    try {
+        const zones = await imports.mainModels.zones.findAll({
+            where: {
+                calibrationStatus: 1
+            },
+            raw: true,
+            attributes: ['id']
+        });
+        const zoneCalibrations = await imports.mongoModels.zone_calibrations.find({
+            zoneId: { $in: zones.map(zone => zone.id) }
+        }).exec();
+        const calibratedValues = await imports.models.maps_eta_details.findAll({
+            where: {
+                zoneId: { [Op.in]: zones.map(zone => zone.id) }
+            },
+            attributes: [
+                'time',
+                [
+                    fn('avg', literal('((`durationHereMaps`/60)/(`durationGoogleMaps`/60))')),
+                    'adjustment'
+                ],
+                'zoneId'
+            ],
+            group: ['zoneId', 'time'],
+            raw: true
+        });
+        const newCalibrations = groupBy(calibratedValues, 'zoneId');
+        const existingZones = zoneCalibrations.map(zc => zc.zoneId);
+        await Promise.all(Object.entries(newCalibrations).map(([key, value]) => {
+            const calibration = {};
+
+            value.forEach((val) => {
+                const timeString = moment(val, 'hh:mm a').format('hh:mm:00 A');
+                calibration[timeString] = val.adjustment;
+            });
+            if (!Object.keys(calibration).length) {
+                return Promise.resolve();
+            }
+            if (existingZones.indexOf(key) === -1) {
+                return imports.mongoModels.zone_calibrations.create({
+                    zoneId: key,
+                    calibration
+                });
+            }
+
+            return imports.mongoModels.zone_calibrations.update({
+                calibration
+            }, {
+                zoneId: key
+            });
+        }));
+    } catch (e) {
+        console.log('Calibration Update Error: ', e);
+    }
+}
+
+cron.schedule('00 00,12 * * *', () => {
+    console.log(new Date(), 'running a task every 12 hours');
+    updateCalibrationValues();
+});
 
 
 module.exports = {};

@@ -1,0 +1,34 @@
+{
+  "development": {
+    "username": "DB_USERNAME",
+    "password": "DB_PASSWORD",
+    "database": "DB_NAME",
+    "host": "127.0.0.1",
+    "dialect": "mysql",
+    "logging": false
+  },
+  "staging": {
+    "username": "",
+    "password": "",
+    "database": "",
+    "host": "",
+    "dialect": "",
+    "logging": false
+  },
+  "test": {
+    "username": "",
+    "password": "",
+    "database": "",
+    "host": "",
+    "dialect": "",
+    "logging": false
+  },
+  "production": {
+    "username": "",
+    "password": "",
+    "database": "]",
+    "host": "",
+    "dialect": "",
+    "logging": false
+  }
+}
