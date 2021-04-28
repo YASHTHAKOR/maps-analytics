@@ -28,6 +28,13 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   Zone.associate = (models) => {
+    Zone.belongsTo(models.countries, {
+      onDelete: "CASCADE",
+      as: 'country',
+      foreignKey: {
+        allowNull: false
+      }
+    });
   };
   return Zone;
 };

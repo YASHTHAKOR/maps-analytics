@@ -42,8 +42,8 @@ const getDetailsfromHereAndGoogle = async(location, index) => {
             sourceName: location.sourceName,
             destinationName: location.destinationName,
             route: 'Route' + (index+1),
-            date: moment().tz('Europe/Sarajevo').format('YYYY-MM-DD'),
-            time: moment().tz('Europe/Sarajevo').format('hh:mm a'),
+            date: moment().tz(location.timezone).format('YYYY-MM-DD'),
+            time: moment().tz(location.timezone).format('hh:mm a'),
             zoneId: location.zoneId
 
         };
@@ -68,6 +68,21 @@ const getAndSaveDetails = async () => {
         where: {
             zoneId: { [Op.in]: zones.map(zone => zone.id) }
         },
+        attributes: {
+            include: [
+                [literal('`zone->country`.`timezone`'), 'timezone']
+            ]
+        },
+        include: [{
+            model: imports.mainModels.zones,
+            as: 'zone',
+            attributes: [],
+            include: [{
+                model: imports.mainModels.countries,
+                as: 'country',
+                attributes: []
+            }]
+        }],
         raw: true
     });
 
@@ -82,7 +97,8 @@ const getAndSaveDetails = async () => {
         }],
         sourceName: route.sourceName,
         destinationName: route.destinationName,
-        zoneId: route.zoneId
+        zoneId: route.zoneId,
+        timezone: route.timezone
     }));
 
 
@@ -121,7 +137,7 @@ const updateCalibrationValues = async () => {
             attributes: [
                 'time',
                 [
-                    fn('avg', literal('((`durationHereMaps`/60)/(`durationGoogleMaps`/60))')),
+                    literal('ROUND((1 - avg((`durationHereMaps`/60)/(`durationGoogleMaps`/60))) * 100, 2)'),
                     'adjustment'
                 ],
                 'zoneId'
@@ -136,7 +152,7 @@ const updateCalibrationValues = async () => {
 
             value.forEach((val) => {
                 const timeString = moment(val.time, 'hh:mm a').format('hh:mm:00 A');
-                calibration[timeString] = val.adjustment;
+                calibration[timeString] = Number(val.adjustment) || 0;
             });
             if (!Object.keys(calibration).length) {
                 return Promise.resolve();

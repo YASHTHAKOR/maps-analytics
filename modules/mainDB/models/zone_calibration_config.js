@@ -22,6 +22,13 @@ module.exports = (sequelize, DataTypes) => {
     });
 
     mapsEtaDetails.associate = (model) => {
+        mapsEtaDetails.belongsTo(model.zones, {
+            onDelete: "CASCADE",
+            as: 'zone',
+            foreignKey: {
+                allowNull: false
+            }
+        });
     };
 
     return mapsEtaDetails;
