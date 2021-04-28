@@ -23,6 +23,7 @@ const getDistanceAndDuration = (data) => {
 
 
 const getDetailsfromHereAndGoogle = async(location, index) => {
+    try {
         let hereMapDetails = await imports.hereMap.getDistanceMatrix(location.source, location.destination);
         let googleMapDetails = await imports.googleMap.getDistanceMatrix(location.source, location.destination);
 
@@ -47,9 +48,10 @@ const getDetailsfromHereAndGoogle = async(location, index) => {
 
         };
 
-    await imports.models.maps_eta_details.create(details);
-
-
+        await imports.models.maps_eta_details.create(details);
+    } catch (e) {
+        console.log('map call for distance/duration failed: ', e);
+    }
 };
 
 
@@ -133,7 +135,7 @@ const updateCalibrationValues = async () => {
             const calibration = {};
 
             value.forEach((val) => {
-                const timeString = moment(val, 'hh:mm a').format('hh:mm:00 A');
+                const timeString = moment(val.time, 'hh:mm a').format('hh:mm:00 A');
                 calibration[timeString] = val.adjustment;
             });
             if (!Object.keys(calibration).length) {
