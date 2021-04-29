@@ -174,10 +174,12 @@ const updateCalibrationValues = async () => {
         const updatedZones = Object.keys(newCalibrations).map((id) => Number(id));
         const zoneNames = zones.filter(zone => updatedZones.indexOf(zone.id) !== -1).map(zone => zone.name).join(', ')
 
-        imports.mailer.mailIt({
-            zones: zoneNames,
-            updatedFor: updatedZones.length > 1 ? 'zones' : 'zone'
-        });
+        if (updatedZones.length) {
+            imports.mailer.mailIt({
+                zones: zoneNames,
+                updatedFor: updatedZones.length > 1 ? 'zones' : 'zone'
+            });
+        }
     } catch (e) {
         console.log('Calibration Update Error: ', e);
     }
