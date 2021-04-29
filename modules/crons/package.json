@@ -5,7 +5,7 @@
     "private": true,
 
     "plugin": {
-        "consumes": ["hereMap", "googleMap", "models", "mainModels", "mongoModels"],
+        "consumes": ["hereMap", "googleMap", "models", "mainModels", "mongoModels", "mailer"],
         "provides": []
     }
 }

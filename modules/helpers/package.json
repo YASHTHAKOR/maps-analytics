@@ -8,6 +8,6 @@
         "consumes": [
             "models"
         ],
-        "provides": ["hereMap", "googleMap"]
+        "provides": ["hereMap", "googleMap", "mailer", "config"]
     }
 }

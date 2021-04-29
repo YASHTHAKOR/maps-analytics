@@ -27,6 +27,8 @@
     "mongoose": "^5.12.5",
     "mysql2": "^2.1.0",
     "node-cron": "^2.0.3",
-    "sequelize": "^6.3.4"
+    "nodemailer": "^6.6.0",
+    "sequelize": "^6.3.4",
+    "swig-email-templates": "^6.0.0"
   }
 }

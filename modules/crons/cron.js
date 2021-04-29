@@ -125,7 +125,7 @@ const updateCalibrationValues = async () => {
                 calibrationStatus: 1
             },
             raw: true,
-            attributes: ['id']
+            attributes: ['id', 'name']
         });
         const zoneCalibrations = await imports.mongoModels.zone_calibrations.find({
             zoneId: { $in: zones.map(zone => zone.id) }
@@ -157,19 +157,27 @@ const updateCalibrationValues = async () => {
             if (!Object.keys(calibration).length) {
                 return Promise.resolve();
             }
-            if (existingZones.indexOf(key) === -1) {
+            if (existingZones.indexOf(Number(key)) === -1) {
                 return imports.mongoModels.zone_calibrations.create({
                     zoneId: key,
                     calibration
                 });
             }
 
-            return imports.mongoModels.zone_calibrations.update({
-                calibration
-            }, {
+            return imports.mongoModels.zone_calibrations.updateMany({
                 zoneId: key
-            });
+            }, {
+                calibration
+            }).exec();
         }));
+
+        const updatedZones = Object.keys(newCalibrations).map((id) => Number(id));
+        const zoneNames = zones.filter(zone => updatedZones.indexOf(zone.id) !== -1).map(zone => zone.name).join(', ')
+
+        imports.mailer.mailIt({
+            zones: zoneNames,
+            updatedFor: updatedZones.length > 1 ? 'zones' : 'zone'
+        });
     } catch (e) {
         console.log('Calibration Update Error: ', e);
     }
