@@ -64,6 +64,9 @@ const getAndSaveDetails = async () => {
         raw: true,
         attributes: ['id']
     });
+    if (zones && !zones.length) {
+        return;
+    }
     const routes = await imports.mainModels.zone_calibration_config.findAll({
         where: {
             zoneId: { [Op.in]: zones.map(zone => zone.id) }
@@ -127,6 +130,9 @@ const updateCalibrationValues = async () => {
             raw: true,
             attributes: ['id', 'name']
         });
+        if (zones && !zones.length) {
+            return;
+        }
         const zoneCalibrations = await imports.mongoModels.zone_calibrations.find({
             zoneId: { $in: zones.map(zone => zone.id) }
         }).exec();
